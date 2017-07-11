@@ -11,35 +11,42 @@ class Branch:
         self.model = model
         self.dic = dic
 
-    def add(self, path, val):
-        if len(path.elements) == 0:
+    def add(self, path, tm, val):
+        if len(path) == 0:
             print "empty path"
             return
         
         dic_next = self.dic
 
-        for i , element in enumerate(path.elements):
-            if (i < len(path.elements) - 1) :
+        for i , element in enumerate(path):
+            if (i < len(path) - 1) :
                if element in dic_next:
                    dic_next = dic_next[element]
                else:
                    dic_next[element] = {}
                    dic_next = dic_next[element]
 
-        if path.elements[-1] in dic_next and type(dic_next[path.elements[-1]]) is list:
-           dic_next[path.elements[-1]].append(val)
+        if path[-1] in dic_next and type(dic_next[path[-1]]) is list:
+            dic_next[path[-1]].append({"timestamp":tm, "value":val})
         else:
-           dic_next[path.elements[-1]] = [val]
+            dic_next[path[-1]] = [{"timestamp":tm, "value":val}]
 
     def get(self, path):
          
          dic_next = self.dic
-         for element in path.elements:
+         for element in path:
              if element in dic_next:
                  dic_next = dic_next[element]
              else:
                  return
          return dic_next
+    
+    def getAverage(self, path, interval):
+        iters = self.get(path)
+        sums = 0
+        for i in range(interval):
+            sums += iters[-1-i]["value"]
+        return sums / interval
 
 class PathVal:
     def __init__(self, path, value):

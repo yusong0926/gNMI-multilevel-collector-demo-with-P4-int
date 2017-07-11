@@ -32,7 +32,29 @@ host_port = 80050
 mode = "stream"
 nums = 0
 
-metrics = potsdb.Client('localhost')
+db_host = 'localhost'
+db_port = 4242
+metrics = potsdb.Client(db_host, port=db_port)
+
+def encodePath(path):
+    pathStrs = "" 
+    for pe in path:
+        pstr = pe.name
+        if pe.key:
+             for k, v in pe.key.iteritems():
+                  pstr += "[" + str(k) + "=" + str(v) + "]"
+        pathStrs = pathStrs + "." + pstr
+    return pathStrs[1:]
+
+def saveToTSDB(response):
+    for update in response.update.update:
+        path_metric = encodePath(update.path.elem)
+        tm = response.update.timestamp
+        value = update.val.int_val 
+        metrics.send(path_metric, value, timestamp=tm)
+        logger.debug("send to openTSDB: metric: %s, value: %s" %(path_metric, value))
+
+
 
 def get(stub, path_str, metadata):
     """Get and echo the response"""
@@ -43,13 +65,13 @@ def get(stub, path_str, metadata):
 def subscribe(stub, path_str, mode, metadata):
     global nums
     """Subscribe and echo the stream"""
-    logger.debug("start to subscrib path: %s in %s mode" % (path_str, mode))
+    logger.info("start to subscrib path: %s in %s mode" % (path_str, mode))
     subscribe_request = pyopenconfig.resources.make_subscribe_request(path_str=path_str, mode=mode)
     i = 0
     try:
         for response in stub.Subscribe(subscribe_request, metadata=metadata):
-            logger.info(response)
-            metrics.send('test.metric', 100)
+            logger.debug(response)
+            saveToTSDB(response)
             i += 1
             nums = i
     except grpc.framework.interfaces.face.face.AbortionError, error: # pylint: disable=catching-non-exception
@@ -83,6 +105,7 @@ def run():
     parser.add_argument('--username', type=str, help='username')
     parser.add_argument('--password', type=str, help='password')
     parser.add_argument('--mode', type=str, default='stream', help='subscription mode')
+    parser.add_argument('--debug', type=str, default='on', help='debug level')
 
     group = parser.add_mutually_exclusive_group()
     group.add_argument('--get',
@@ -92,6 +115,9 @@ def run():
     args = parser.parse_args()
 
     metadata = None
+    if args.debug == "off":
+        logger.setLevel(logging.INFO)
+        
     if args.username or args.password:
         metadata = [("username", args.username), ("password", args.password)]
 

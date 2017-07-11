@@ -4,7 +4,8 @@
 Assess open config's viability for a-cord
 
 ## Get STARGED
-install dependencies: grpc, potsdb
+### Install Dependencies
+Install dependencies: grpc, potsdb
 '''
 pip install -r requirements.txt
 '''

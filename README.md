@@ -8,7 +8,7 @@ Assess open config's viability for a-cord
 ```
 python probe.py --port 80049 --time 0.01
 ```
-probe server will run in port 80049, probe will generate updates in every 0.01 second, probe will generate updates in every 0.01 second`when a subscription request received.
+probe server will run in port 80049, probe will generate updates in every 0.01 second when a subscription request received.
 
 Use -h to check the argument options
 ### Start Collector Server 
@@ -26,6 +26,6 @@ python test_client.py --subscribe "interfaces/ethnet/state" --port 80050
 test_client will subscribe to port 80050 which is the collector server, and send request for updates of path: "interfaces/ethnet/state"
 
 Use -h to check the argument options
-###OPENTSDB
+### OPENTSDB
 The address and port of OPENSTDB is defined in test_client.py. The default is localhost:4242. You can change it in test_client.py. Metric name will be the path name you subscribed.
 

@@ -24,6 +24,7 @@ _ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 host='localhost'
 port=80049
+time_frequency = 1.0
 
 #gNMI service which provides all rpc calls for gNMI client 
 class ProbeServicer(gnmi_pb2_grpc.gNMIServicer):
@@ -55,9 +56,9 @@ class ProbeServicer(gnmi_pb2_grpc.gNMIServicer):
                     update_msg.append(self.fakeValue(sub.path))
                 tm = int(time.time() * 1000)
                 noti = gnmi_pb2.Notification(timestamp=tm, update=update_msg)
-                time.sleep(1)
-                logger.info("Generate new update : " )
-                logger.info(noti)
+                time.sleep(time_frequency)
+                logger.debug("Generate new update : " )
+                logger.debug(noti)
                 yield gnmi_pb2.SubscribeResponse(update=noti)
                 if mode == 0:
                     continue
@@ -73,7 +74,15 @@ def serve():
   parser = argparse.ArgumentParser()
   parser.add_argument('--host', default='localhost',help='OpenConfig server host')
   parser.add_argument('--port', default=80049,help='OpenConfig server port')
+  parser.add_argument('--time', default=1,help='data generating frequency')
+  parser.add_argument('--debug', type=str, default='on', help='debug level')
   args = parser.parse_args()
+
+  global time_frequency
+  time_frequency = float(args.time)
+
+  if args.debug == "off":
+       logger.setLevel(logging.INFO)
 
   server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
   gnmi_pb2_grpc.add_gNMIServicer_to_server(

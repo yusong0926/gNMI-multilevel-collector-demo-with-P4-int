@@ -6,9 +6,9 @@ Assess open config's viability for a-cord
 ## Get STARGED
 ### Install Dependencies
 Install dependencies: grpc, potsdb
-'''
+```
 pip install -r requirements.txt
-'''
+```
 ### Start Probe Server
 ```
 python probe.py --port 80049 --time 0.01

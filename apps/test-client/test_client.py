@@ -32,7 +32,7 @@ host_port = 80050
 mode = "stream"
 nums = 0
 
-db_host = 'localhost'
+db_host = '127.0.0.1'
 db_port = 4242
 metrics = potsdb.Client(db_host, port=db_port)
 

@@ -25,11 +25,9 @@ class Branch:
                else:
                    dic_next[element] = {}
                    dic_next = dic_next[element]
+        
 
-        if path[-1] in dic_next and type(dic_next[path[-1]]) is list:
-            dic_next[path[-1]].append({"timestamp":tm, "value":val})
-        else:
-            dic_next[path[-1]] = [{"timestamp":tm, "value":val}]
+         dic_next[path[-1]] = val 
 
     def get(self, path):
          
@@ -41,12 +39,6 @@ class Branch:
                  return
          return dic_next
     
-    def getAverage(self, path, interval):
-        iters = self.get(path)
-        sums = 0
-        for i in range(interval):
-            sums += iters[-1-i]["value"]
-        return sums / interval
 
 class PathVal:
     def __init__(self, path, value):

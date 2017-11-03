@@ -16,9 +16,11 @@ import grpc
 import grpc.framework.interfaces.face
 import pyopenconfig.gnmi_pb2
 import pyopenconfig.resources
+import p4.p4_pb2 as p4_pb2
 
 import potsdb
 import atexit
+from influxdb import InfluxDBClient
 
 # - logging configuration
 logging.basicConfig()
@@ -33,8 +35,12 @@ mode = "stream"
 nums = 0
 
 db_host = '127.0.0.1'
+#db_port = 8086
 db_port = 4242
 metrics = potsdb.Client(db_host, port=db_port)
+#client = InfluxDBClient('localhost', 8086, 'root', 'root', 'example')
+#client.create_database('example')
+
 
 def encodePath(path):
     pathStrs = "" 
@@ -46,16 +52,47 @@ def encodePath(path):
         pathStrs = pathStrs + "." + pstr
     return pathStrs[1:]
 
-def saveToTSDB(response):
-    for update in response.update.update:
-        path_metric = encodePath(update.path.elem)
-        tm = response.update.timestamp
-        value = update.val.int_val 
-        metrics.send(path_metric, value, timestamp=tm)
-        logger.debug("send to openTSDB: metric: %s, value: %s" %(path_metric, value))
+def mapToJson(k,v,data):
+    if (data.type == 0):
+        dtype = "ingress"
+    elif (data.type == 1):
+        dtype = "egress"
+    else:
+        dtype = "buffer"
+    d = {}
+    d["measurement"] = k
+    d["tags"] ={"switch_id":data.switch_id,"item_id":data.item_id,"type":dtype}
+    d["time"] = time.strftime('%Y-%m-%dT%H:%M:%SZ', time.localtime(data.timestamp)) 
+    d["fields"] = {"value":v}
+    return [d]
 
+def saveToOPTSDB(event):
 
+    for data in event.p4_int_metadata:
+            for k, v in data.kpis.iteritems():
+               # tm = data.timestamp
+                tm = time.time()
+               # json_body = mapToJson(k,v,data)
+               # client.write_points(json_body)
+                if (data.type == 0):
+                     dtype = "ingress"
+                elif (data.type == 1):
+                     dtype = "egress"
+                else:
+                     dtype = "buffer"
+                metrics.send(k,v,timestamp=tm,switch_id=data.switch_id,item_id=data.item_id,type=dtype)
+                logger.debug("send to TSDB: k:%s, v:%s, tag1:%s, tag2:%s, tag3:%s" %(k,v,data.switch_id,data.item_id,data.type))
 
+def saveToTSDB(event):
+
+    for data in event.p4_int_metadata:
+            for k, v in data.kpis.iteritems():
+                tm = data.timestamp
+                json_body = mapToJson(k,v,data)
+                client.write_points(json_body)
+                logger.debug("send to TSDB: k:%s, v:%s, switch_id:%s, item_id:%s, type:%s" %(k,v,data.switch_id,data.item_id,data.type))
+
+ 
 def get(stub, path_str, metadata):
     """Get and echo the response"""
     response = stub.Get(pyopenconfig.resources.make_get_request(path_str),
@@ -70,8 +107,11 @@ def subscribe(stub, path_str, mode, metadata):
     i = 0
     try:
         for response in stub.Subscribe(subscribe_request, metadata=metadata):
-            logger.debug(response)
-            saveToTSDB(response)
+            #logger.debug(response)
+            p4 = p4_pb2.P4_int()
+            for update in response.update.update:
+              update.val.any_val.Unpack(p4)
+              saveToOPTSDB(p4)
             i += 1
             nums = i
     except grpc.framework.interfaces.face.face.AbortionError, error: # pylint: disable=catching-non-exception

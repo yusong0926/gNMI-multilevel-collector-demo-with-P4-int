@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+import "google/protobuf/descriptor.proto";
+
+package p4;
+
+message P4_int {
+   int64 switch_id = 1;
+   int64 version = 2;
+   int64 replication = 3;
+   int64 c = 4;
+   int64 hop_count_exceeded = 5;
+   int64 inst_count = 6;
+   int64 Max_hop_count = 7;
+   repeated P4_int_metadata p4_int_metadata = 8;
+}
+
+message P4_int_metadata {
+   Type type = 1;
+   int64 switch_id = 2;
+   int64 item_id = 3;
+   int64 c_plane_state_ver_number = 4;
+   int64 timestamp = 5;
+   map<string, float> kpis = 6;
+}
+enum Type {
+    ingress = 0;
+    egress = 1;
+    buffer = 2;
+}
+

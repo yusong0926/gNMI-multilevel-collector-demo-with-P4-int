@@ -42,7 +42,7 @@ Use -h to check the argument options
 ### Start Test_client 
 ```sh
 cd app/test-client
-python test_client.py --subscribe "interfaces/ethnet/state" --port 7001
+python test_client.py --subscribe "p4_int" --port 7001
 ```
 test_client will subscribe to port 7001 which is the collector server, and send request for updates of path: "interfaces/ethnet/state"
 

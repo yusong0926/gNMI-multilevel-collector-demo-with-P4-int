@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-# Copyright (C) 2016  Arista Networks, Inc.
-# Use of this source code is governed by the Apache License 2.0
-# that can be found in the COPYING file.
 
 """The Python implementation of a gNMI client."""
 
@@ -20,7 +17,7 @@ import p4.p4_pb2 as p4_pb2
 
 import potsdb
 import atexit
-from influxdb import InfluxDBClient
+#from influxdb import InfluxDBClient
 
 # - logging configuration
 logging.basicConfig()
@@ -32,7 +29,6 @@ host_ip = "localhost"
 host_port = 80050
 
 mode = "stream"
-nums = 0
 
 db_host = '127.0.0.1'
 #db_port = 8086
@@ -90,8 +86,6 @@ def saveToTSDB(event):
                 tm = data.timestamp
                 json_body = mapToJson(k,v,data)
                 client.write_points(json_body)
-                logger.debug("send to TSDB: k:%s, v:%s, switch_id:%s, item_id:%s, type:%s" %(k,v,data.switch_id,data.item_id,data.type))
-
  
 def get(stub, path_str, metadata):
     """Get and echo the response"""
@@ -104,7 +98,6 @@ def subscribe(stub, path_str, mode, metadata):
     """Subscribe and echo the stream"""
     logger.info("start to subscrib path: %s in %s mode" % (path_str, mode))
     subscribe_request = pyopenconfig.resources.make_subscribe_request(path_str=path_str, mode=mode)
-    i = 0
     try:
         for response in stub.Subscribe(subscribe_request, metadata=metadata):
             #logger.debug(response)
@@ -112,8 +105,6 @@ def subscribe(stub, path_str, mode, metadata):
             for update in response.update.update:
               update.val.any_val.Unpack(p4)
               saveToOPTSDB(p4)
-            i += 1
-            nums = i
     except grpc.framework.interfaces.face.face.AbortionError, error: # pylint: disable=catching-non-exception
         if error.code == grpc.StatusCode.OUT_OF_RANGE and error.details == 'EOF':
             # https://github.com/grpc/grpc/issues/7192

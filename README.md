@@ -1,7 +1,9 @@
 #  OPENCONFIG POC 
 
 ## OBJECTIVE 
-Assess open config's viability for a-cord
+Assess open config's viability for a-cord.
+Demo presenttion on cord build (starts on 16:28)
+https://www.youtube.com/watch?v=RCrlbSiN9eY&list=PLCnPGaNt7C5fsU4n67baCbLRMJiBQjVq8&index=4
 
 ## Get STARGED
 ### Install Dependencies

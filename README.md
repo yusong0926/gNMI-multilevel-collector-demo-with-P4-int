@@ -46,7 +46,7 @@ Use -h to check the argument options
 cd app/test-client
 python test_client.py --subscribe "p4_int" --port 7001
 ```
-test_client will subscribe to port 7001 which is the collector server.
+test_client will subscribe to port 7001 which is the collector server, and publish the datat to openTSDB.
 
 Use -h to check the argument options
 ``

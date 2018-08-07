@@ -29,7 +29,7 @@ docker run -d --name=grafana -p 3000:3000 grafana/grafana
 cd app/probe
 python probe.py --port 7000 --time 0.01
 ```
-probe server will run in port 7000, probe will generate updates in every 0.01 second when a subscription request received.
+probe server will run in port 7000, probe will simulate p4 in-band telemetry and update in every 0.01 second when a subscription request received.
 
 Use -h to check the argument options
 ### Start Collector Server 
@@ -46,7 +46,7 @@ Use -h to check the argument options
 cd app/test-client
 python test_client.py --subscribe "p4_int" --port 7001
 ```
-test_client will subscribe to port 7001 which is the collector server, and send request for updates of path: "interfaces/ethnet/state"
+test_client will subscribe to port 7001 which is the collector server.
 
 Use -h to check the argument options
 ``
